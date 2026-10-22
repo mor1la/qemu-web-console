@@ -1,0 +1,5 @@
+services:
+  backend:
+    devices: !reset []
+    environment:
+      VM_ACCEL: tcg
