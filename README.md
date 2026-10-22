@@ -43,7 +43,7 @@ cp .env.example .env
 Настройте имя пользователя и пароль в `.env`.
 
 ```bash
-bash scripts/prepare-image.sh
+./scripts/prepare-image.sh
 ```
 
 ### Сборка и запуск
