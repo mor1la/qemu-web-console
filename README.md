@@ -34,17 +34,31 @@ sudo apt-get install -y curl qemu-utils cloud-image-utils openssh-client python3
 
 ## Первый запуск
 
+### Подготовка виртуальной машины
+
 ```bash
 cp .env.example .env
-nano .env  # измените VM_PASSWORD, при необходимости VM_USER
-chmod 600 .env
+```
 
+Настройте имя пользователя и пароль в `.env`.
+
+```bash
 bash scripts/prepare-image.sh
-bash scripts/build.sh
-bash scripts/up.sh
+```
+
+### Сборка и запуск
+
+```bash
+docker compose up -d --build
 ```
 
 Откройте **http://127.0.0.1:8080**.
+
+### Остановка
+
+```bash
+docker compose down
+```
 
 ### Без `/dev/kvm`
 
@@ -85,9 +99,6 @@ docker compose -f compose.yaml -f compose.no-kvm.yaml up -d --build
 ## Команды и диагностика
 
 ```bash
-bash scripts/build.sh                    # собрать оба Docker-образа
-bash scripts/up.sh                       # запустить (при необходимости пересобрать)
-bash scripts/down.sh                     # остановить и удалить контейнеры
 docker compose logs -f backend          # логи backend
 cat data/run/qemu.log                   # stderr/stdout QEMU
 curl http://127.0.0.1:8080/api/status   # проверить API

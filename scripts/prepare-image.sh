@@ -6,7 +6,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DATA="$ROOT/data"
 BASE="debian-13-genericcloud-amd64-20261001-2618.qcow2"
 URL="https://cloud.debian.org/images/cloud/trixie/20261001-2618/$BASE"
-SHA512_BASE64="9G8GcablvexSkauJcrri8Q5UCML2SnQHjxHvwvBqQ2qdAxPtUOBHJULuq/eA6ffHkqwKMUxsIFB/zZ/YG0aMPQ=="
+SHA512="f46f0671a6e5bdec5291ab8972bae2f10e5408c2f64a74078f11efc2f06a436a9d0313ed50e0472542eeabf780e9f7c792ac0a314c6c20507fcd9fd81b468c3d"
 
 # Load VM user settings from .env
 if [[ -f "$ROOT/.env" ]]; then
@@ -21,8 +21,11 @@ if [[ ! "$VM_USER" =~ ^[a-z_][a-z0-9_-]*$ ]]; then
   exit 1
 fi
 
-for cmd in curl qemu-img cloud-localds ssh-keygen python3 openssl; do
-  command -v "$cmd" >/dev/null || { echo "Missing: $cmd" >&2; exit 1; }
+for cmd in curl qemu-img cloud-localds ssh-keygen openssl sha512sum; do
+  command -v "$cmd" >/dev/null || {
+    echo "Missing: $cmd" >&2
+    exit 1
+  }
 done
 
 # Generate password hash
@@ -44,24 +47,8 @@ if [[ ! -f "$DATA/$BASE" ]]; then
   mv "$DATA/$BASE.part" "$DATA/$BASE"
 fi
 
-# Verify SHA512
-python3 - "$DATA/$BASE" "$SHA512_BASE64" <<'PYVERIFY'
-import base64
-import hashlib
-import sys
-
-path, expected = sys.argv[1:]
-h = hashlib.sha512()
-
-with open(path, 'rb') as f:
-    for chunk in iter(lambda: f.read(1024 * 1024), b''):
-        h.update(chunk)
-
-if h.digest() != base64.b64decode(expected):
-    sys.exit('ERROR: Debian image SHA512 mismatch')
-
-print('Debian cloud image SHA512 verified')
-PYVERIFY
+# Verify Debian image
+echo "$SHA512  $DATA/$BASE" | sha512sum -c -
 
 # Create VM disk
 if [[ -e "$DATA/debian.qcow2" ]]; then
@@ -75,7 +62,6 @@ PUBKEY="$(cat "$DATA/keys/id_ed25519.pub")"
 
 # Generate cloud-init configuration
 touch "$DATA/user-data"
-chmod 600 "$DATA/user-data"
 
 cat > "$DATA/user-data" <<EOF
 #cloud-config
