@@ -1,0 +1,24 @@
+services:
+  backend:
+    build: ./backend
+    environment:
+      VM_DISK: /data/debian.qcow2
+      VM_SEED: /data/seed.iso
+      VM_SSH_KEY: /data/keys/id_ed25519
+      VM_MEMORY_MB: "2048"
+      VM_CPUS: "2"
+      VM_USER: ${VM_USER:-debian}
+      VM_ACCEL: kvm
+    volumes:
+      - ./data:/data
+    devices:
+      - /dev/kvm:/dev/kvm
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      - backend
+    ports:
+      - "127.0.0.1:8080:80"
+    restart: unless-stopped
