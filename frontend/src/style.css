@@ -105,3 +105,28 @@
     opacity: 0.6;
     margin-top: 25px;
   }
+
+.notice {
+  padding: 14px 18px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  line-height: 1.5;
+}
+
+.notice.info {
+  color: #c7e0ff;
+  background: #172c48;
+  border-color: #3b6ca7;
+}
+
+.notice.warning {
+  color: #ffdda8;
+  background: #332916;
+  border-color: #8d642b;
+}
+
+.notice.success {
+  color: #9eefd0;
+  background: #16332c;
+  border-color: #2f7959;
+}
