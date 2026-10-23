@@ -15,6 +15,7 @@ fi
 
 VM_USER="${VM_USER:-debian}"
 : "${VM_PASSWORD:?Set VM_PASSWORD in .env before preparing the image}"
+: "${ROOT_PASSWORD:?Set ROOT_PASSWORD in .env before preparing the image}"
 
 if [[ ! "$VM_USER" =~ ^[a-z_][a-z0-9_-]*$ ]]; then
   echo "Invalid VM_USER: use lowercase letters, digits, _ or -" >&2
@@ -28,9 +29,10 @@ for cmd in curl qemu-img cloud-localds ssh-keygen openssl sha512sum; do
   }
 done
 
-# Generate password hash
+# Generate password hashes
 PASSWORD_HASH="$(printf '%s\n' "$VM_PASSWORD" | openssl passwd -6 -stdin)"
-unset VM_PASSWORD
+ROOT_PASSWORD_HASH="$(printf '%s\n' "$ROOT_PASSWORD" | openssl passwd -6 -stdin)"
+unset VM_PASSWORD ROOT_PASSWORD
 
 mkdir -p "$DATA/keys" "$DATA/run"
 chmod 700 "$DATA" "$DATA/keys" "$DATA/run"
@@ -77,6 +79,10 @@ users:
     passwd: '${PASSWORD_HASH}'
     ssh_authorized_keys:
       - ${PUBKEY}
+
+  - name: root
+    lock_passwd: false
+    hashed_passwd: '${ROOT_PASSWORD_HASH}'
 
 ssh_pwauth: false
 disable_root: true
